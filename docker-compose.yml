@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: seeat-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: seafood_dummy_test   # [수정] seeat_db -> seafood_dummy_test (Railway 개발/테스트 DB명과 통일)
+      TZ: Asia/Seoul
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "3307:3306"   # [수정] 3306:3306 -> 3307:3306 (로컬 MySQL 설치자와 포트 충돌 방지, 호스트쪽만 변경)
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./db/schema_v4.sql:/docker-entrypoint-initdb.d/01-schema.sql        # [추가] 최초 기동 시 스키마(18개 테이블, V4) 자동 생성
+      - ./db/docker_seed_data.sql:/docker-entrypoint-initdb.d/02-seed-data.sql   # [추가] 스키마 생성 직후 더미데이터 자동 삽입
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: seeat-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+volumes:
+  mysql-data:
+  redis-data:
