@@ -14,12 +14,12 @@ jobs:
 
     steps:
       - name: 코드 체크아웃
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # 위성훈님 PDF 기준 Spring Boot 3.3.2 + Gradle 8.8.
       # Java 버전은 build.gradle의 sourceCompatibility 확인해서 맞춰야 함 (일단 17로 설정, 다르면 수정 필요)
       - name: JDK 17 설치
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
