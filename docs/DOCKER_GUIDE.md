@@ -37,8 +37,8 @@ spring:
 | 파일 | 역할 |
 |---|---|
 | `docker-compose.yml` | MySQL 8.0 + Redis 7.2 컨테이너 정의 |
-| `db/docker_schema_v4.sql` | 최초 기동 시 자동 실행되는 스키마 DDL (18개 테이블) |
-| `db/docker_seed_data.sql` | 스키마 생성 직후 자동 실행되는 더미데이터 INSERT |
+| `db/docker/docker_schema_v4.sql` | 최초 기동 시 자동 실행되는 스키마 DDL (18개 테이블) |
+| `db/docker/docker_seed_data.sql` | 스키마 생성 직후 자동 실행되는 더미데이터 INSERT |
 
 ## 재초기화가 필요할 때
 
@@ -60,7 +60,7 @@ GitHub (소스 코드, db/*.sql)
    ▼
 Docker Engine
    ├─ 컨테이너: seeat-mysql (MySQL 8.0, host:3307 → 내부:3306)
-   │     └─ 최초 기동 시 db/docker_schema_v4.sql, db/docker_seed_data.sql 자동 실행
+   │     └─ 최초 기동 시 db/docker/docker_schema_v4.sql, db/docker/docker_seed_data.sql 자동 실행
    └─ 컨테이너: seeat-redis (Redis 7.2, host:6379 → 내부:6379)
         │
         ▼
