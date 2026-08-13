@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>수산물 거래 플랫폼 - 통합 ERD (Peter Chen 표기법, 전체 컬럼)</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+    font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  }
+  header {
+    padding: 20px 24px 12px 24px;
+  }
+  h1 { font-size: 20px; color: #2C2C2A; margin: 0 0 4px 0; }
+  p.sub { font-size: 13px; color: #5F5E5A; margin: 0 0 8px 0; }
+  .legend { font-size: 12px; color: #5F5E5A; margin-bottom: 4px; }
+  .legend span { display: inline-block; margin-right: 16px; }
+  .swatch { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:4px; vertical-align:middle; }
+  .hint { font-size: 12px; color: #8C8B84; margin: 4px 0 0 0; }
+
+  #erd-wrap {
+    position: relative;
+    width: 100%;
+    height: 82vh;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 24px 24px 24px;
+    width: calc(100% - 48px);
+  }
+  #erd-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .zoom-controls {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 10;
+  }
+  .zoom-controls button {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1px solid #D3D1C7;
+    background: #FFFFFF;
+    color: #2C2C2A;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .zoom-controls button:hover {
+    background: #F4F3EF;
+  }
+</style>
+</head>
+<body>
+<header>
+<h1>수산물 거래 플랫폼 — 통합 ERD (Peter Chen 표기법, 전체 컬럼)</h1>
+<p class="sub">디자인 초기안 v1.0 반영 · 20개 테이블 · 전체 71개 컬럼(속성 타원 전부 표시) · 27개 관계 · 도메인별 구역 분리</p>
+<div class="legend">
+  <span><i class="swatch" style="background:#E6F1FB;border:1px solid #185FA5"></i>회원 도메인</span>
+  <span><i class="swatch" style="background:#EAF3DE;border:1px solid #3B6D11"></i>상품 도메인</span>
+  <span><i class="swatch" style="background:#FAEEDA;border:1px solid #854F0B"></i>주문/결제/배송 도메인</span>
+  <span><i class="swatch" style="background:#FBEAF0;border:1px solid #993556"></i>커뮤니티 도메인</span>
+  <span><i class="swatch" style="background:#FDF3D9;border:1px solid #854F0B"></i>관계(마름모)</span>
+  <span><i class="swatch" style="background:#F8F7F3;border:1px solid #A5A399"></i>속성(타원, PK/FK 표기)</span>
+</div>
+<p class="hint">마우스 휠: 확대/축소 · 드래그: 이동 · 우측 버튼: +/- /리셋</p>
+</header>
+
+<div id="erd-wrap">
+  <div class="zoom-controls">
+    <button id="zoomIn" title="확대">+</button>
+    <button id="zoomOut" title="축소">−</button>
+    <button id="zoomReset" title="화면에 맞추기">⤢</button>
+  </div>
+  <div id="erd"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/svg-pan-zoom@3.6.1/dist/svg-pan-zoom.min.js"></script>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Noto Sans KR", sans-serif',
+  themeVariables: {
+    fontSize: '13px',
+    fontFamily: '"Noto Sans KR", sans-serif',
+    lineColor: '#9C9A92',
+    textColor: '#3d3d3a',
+  },
+});
+
+const src = `flowchart TB
+classDef entMember fill:#E6F1FB,stroke:#185FA5,color:#0C447C;
+classDef entProduct fill:#EAF3DE,stroke:#3B6D11,color:#27500A;
+classDef entOrder fill:#FAEEDA,stroke:#854F0B,color:#633806;
+classDef entCommunity fill:#FBEAF0,stroke:#993556,color:#72243E;
+classDef rel fill:#FDF3D9,stroke:#854F0B,color:#633806;
+classDef attr fill:#F8F7F3,stroke:#A5A399,color:#444441;
+
+subgraph sg_member["회원 도메인"]
+direction TB
+e_member["회원<br/>(member)"]
+e_member_a0(["user_id (PK)"])
+e_member_a0 --- e_member
+e_member_a1(["email"])
+e_member_a1 --- e_member
+e_member_a2(["role"])
+e_member_a2 --- e_member
+e_member_a3(["password_hash"])
+e_member_a3 --- e_member
+e_member_a4(["nickname"])
+e_member_a4 --- e_member
+e_seller["판매자사업자정보<br/>(seller_business_info)"]
+e_seller_a0(["user_id (PK,FK)"])
+e_seller_a0 --- e_seller
+e_seller_a1(["business_no"])
+e_seller_a1 --- e_seller
+e_seller_a2(["auth_status"])
+e_seller_a2 --- e_seller
+e_notification["알림<br/>(notification)"]
+e_notification_a0(["notification_id (PK)"])
+e_notification_a0 --- e_notification
+e_notification_a1(["user_id (FK)"])
+e_notification_a1 --- e_notification
+e_notification_a2(["type"])
+e_notification_a2 --- e_notification
+e_notification_a3(["is_read"])
+e_notification_a3 --- e_notification
+r0{"인증"}
+e_member ---|"1"| r0
+r0 ---|"1"| e_seller
+r6{"수신"}
+e_member ---|"1"| r6
+r6 ---|"N"| e_notification
+end
+
+subgraph sg_product["상품 도메인"]
+direction TB
+e_category["카테고리<br/>(category)"]
+e_category_a0(["category_id (PK)"])
+e_category_a0 --- e_category
+e_category_a1(["category_name"])
+e_category_a1 --- e_category
+e_product["상품<br/>(product)"]
+e_product_a0(["product_id (PK)"])
+e_product_a0 --- e_product
+e_product_a1(["seller_id (FK)"])
+e_product_a1 --- e_product
+e_product_a2(["category_id (FK)"])
+e_product_a2 --- e_product
+e_product_a3(["storage_type"])
+e_product_a3 --- e_product
+e_product_a4(["stock_qty"])
+e_product_a4 --- e_product
+e_product_a5(["price"])
+e_product_a5 --- e_product
+e_cart["장바구니<br/>(cart)"]
+e_cart_a0(["cart_id (PK)"])
+e_cart_a0 --- e_cart
+e_cart_a1(["user_id (FK)"])
+e_cart_a1 --- e_cart
+e_cartitem["장바구니상품<br/>(cart_item)"]
+e_cartitem_a0(["cart_product_id (PK)"])
+e_cartitem_a0 --- e_cartitem
+e_cartitem_a1(["cart_id (FK)"])
+e_cartitem_a1 --- e_cartitem
+e_cartitem_a2(["product_id (FK)"])
+e_cartitem_a2 --- e_cartitem
+e_cartitem_a3(["quantity"])
+e_cartitem_a3 --- e_cartitem
+e_addr["배송지<br/>(delivery_address)"]
+e_addr_a0(["address_id (PK)"])
+e_addr_a0 --- e_addr
+e_addr_a1(["user_id (FK)"])
+e_addr_a1 --- e_addr
+e_addr_a2(["is_default"])
+e_addr_a2 --- e_addr
+r11{"분류"}
+e_category ---|"1"| r11
+r11 ---|"N"| e_product
+r12{"포함"}
+e_cart ---|"1"| r12
+r12 ---|"N"| e_cartitem
+r13{"담기"}
+e_product ---|"1"| r13
+r13 ---|"N"| e_cartitem
+rs0{"상하위"}
+e_category ---|"1"| rs0
+rs0 ---|"N"| e_category
+end
+
+subgraph sg_order["주문/결제/배송 도메인"]
+direction TB
+e_order["주문<br/>(order)"]
+e_order_a0(["order_id (PK)"])
+e_order_a0 --- e_order
+e_order_a1(["buyer_id (FK)"])
+e_order_a1 --- e_order
+e_order_a2(["address_id (FK)"])
+e_order_a2 --- e_order
+e_order_a3(["order_status"])
+e_order_a3 --- e_order
+e_orderitem["주문상품<br/>(order_item)"]
+e_orderitem_a0(["order_product_id (PK)"])
+e_orderitem_a0 --- e_orderitem
+e_orderitem_a1(["order_id (FK)"])
+e_orderitem_a1 --- e_orderitem
+e_orderitem_a2(["product_id (FK)"])
+e_orderitem_a2 --- e_orderitem
+e_payment["결제<br/>(payment)"]
+e_payment_a0(["payment_id (PK)"])
+e_payment_a0 --- e_payment
+e_payment_a1(["order_id (FK)"])
+e_payment_a1 --- e_payment
+e_payment_a2(["payment_method"])
+e_payment_a2 --- e_payment
+e_payment_a3(["pg_tx_id"])
+e_payment_a3 --- e_payment
+e_delivery["배송<br/>(delivery)"]
+e_delivery_a0(["delivery_id (PK)"])
+e_delivery_a0 --- e_delivery
+e_delivery_a1(["order_id (FK)"])
+e_delivery_a1 --- e_delivery
+e_delivery_a2(["tracking_no"])
+e_delivery_a2 --- e_delivery
+e_history["주문상태이력<br/>(order_status_history)"]
+e_history_a0(["history_id (PK)"])
+e_history_a0 --- e_history
+e_history_a1(["order_id (FK)"])
+e_history_a1 --- e_history
+e_history_a2(["status_value"])
+e_history_a2 --- e_history
+e_settlement["정산<br/>(settlement)"]
+e_settlement_a0(["settlement_id (PK)"])
+e_settlement_a0 --- e_settlement
+e_settlement_a1(["seller_id (FK)"])
+e_settlement_a1 --- e_settlement
+e_settlement_a2(["amount"])
+e_settlement_a2 --- e_settlement
+r15{"포함"}
+e_order ---|"1"| r15
+r15 ---|"N"| e_orderitem
+r17{"결제"}
+e_order ---|"1"| r17
+r17 ---|"1"| e_payment
+r18{"배송"}
+e_order ---|"1"| r18
+r18 ---|"1"| e_delivery
+r19{"이력기록"}
+e_order ---|"1"| r19
+r19 ---|"N"| e_history
+end
+
+subgraph sg_community["커뮤니티 도메인"]
+direction TB
+e_post["게시글<br/>(post)"]
+e_post_a0(["post_id (PK)"])
+e_post_a0 --- e_post
+e_post_a1(["user_id (FK)"])
+e_post_a1 --- e_post
+e_post_a2(["category"])
+e_post_a2 --- e_post
+e_post_a3(["title"])
+e_post_a3 --- e_post
+e_post_a4(["is_blinded"])
+e_post_a4 --- e_post
+e_postimage["게시글이미지<br/>(post_image)"]
+e_postimage_a0(["image_id (PK)"])
+e_postimage_a0 --- e_postimage
+e_postimage_a1(["post_id (FK)"])
+e_postimage_a1 --- e_postimage
+e_postimage_a2(["image_url"])
+e_postimage_a2 --- e_postimage
+e_comment["댓글<br/>(comment)"]
+e_comment_a0(["comment_id (PK)"])
+e_comment_a0 --- e_comment
+e_comment_a1(["post_id (FK)"])
+e_comment_a1 --- e_comment
+e_comment_a2(["user_id (FK)"])
+e_comment_a2 --- e_comment
+e_comment_a3(["parent_id (FK)"])
+e_comment_a3 --- e_comment
+e_postlike["게시글좋아요<br/>(post_like)"]
+e_postlike_a0(["like_id (PK)"])
+e_postlike_a0 --- e_postlike
+e_postlike_a1(["post_id (FK)"])
+e_postlike_a1 --- e_postlike
+e_postlike_a2(["user_id (FK)"])
+e_postlike_a2 --- e_postlike
+e_report["신고<br/>(report)"]
+e_report_a0(["report_id (PK)"])
+e_report_a0 --- e_report
+e_report_a1(["target_type"])
+e_report_a1 --- e_report
+e_report_a2(["target_id"])
+e_report_a2 --- e_report
+e_report_a3(["reporter_id (FK)"])
+e_report_a3 --- e_report
+e_tag["상품태그<br/>(product_tag)"]
+e_tag_a0(["tag_id (PK)"])
+e_tag_a0 --- e_tag
+e_tag_a1(["post_id (FK)"])
+e_tag_a1 --- e_tag
+e_tag_a2(["product_id (FK)"])
+e_tag_a2 --- e_tag
+r21{"첨부"}
+e_post ---|"1"| r21
+r21 ---|"N"| e_postimage
+r22{"포함"}
+e_post ---|"1"| r22
+r22 ---|"N"| e_comment
+r23{"받음"}
+e_post ---|"1"| r23
+r23 ---|"N"| e_postlike
+r24{"태그"}
+e_post ---|"1"| r24
+r24 ---|"N"| e_tag
+rs1{"대댓글"}
+e_comment ---|"1"| rs1
+rs1 ---|"N"| e_comment
+end
+
+r1{"판매"}
+e_member ---|"1"| r1
+r1 ---|"N"| e_product
+r2{"소유"}
+e_member ---|"1"| r2
+r2 ---|"1"| e_cart
+r3{"등록"}
+e_member ---|"1"| r3
+r3 ---|"N"| e_addr
+r4{"주문"}
+e_member ---|"1"| r4
+r4 ---|"N"| e_order
+r5{"정산"}
+e_member ---|"1"| r5
+r5 ---|"N"| e_settlement
+r7{"작성"}
+e_member ---|"1"| r7
+r7 ---|"N"| e_post
+r8{"작성"}
+e_member ---|"1"| r8
+r8 ---|"N"| e_comment
+r9{"추천"}
+e_member ---|"1"| r9
+r9 ---|"N"| e_postlike
+r10{"신고"}
+e_member ---|"1"| r10
+r10 ---|"N"| e_report
+r14{"배송지"}
+e_addr ---|"1"| r14
+r14 ---|"N"| e_order
+r16{"담기"}
+e_product ---|"1"| r16
+r16 ---|"N"| e_orderitem
+r20{"연동"}
+e_product ---|"1"| r20
+r20 ---|"N"| e_tag
+
+class e_member entMember
+class e_seller entMember
+class e_notification entMember
+class e_category entProduct
+class e_product entProduct
+class e_cart entProduct
+class e_cartitem entProduct
+class e_addr entProduct
+class e_order entOrder
+class e_orderitem entOrder
+class e_payment entOrder
+class e_delivery entOrder
+class e_history entOrder
+class e_settlement entOrder
+class e_post entCommunity
+class e_postimage entCommunity
+class e_comment entCommunity
+class e_postlike entCommunity
+class e_report entCommunity
+class e_tag entCommunity
+class e_member_a0 attr
+class e_member_a1 attr
+class e_member_a2 attr
+class e_member_a3 attr
+class e_member_a4 attr
+class e_seller_a0 attr
+class e_seller_a1 attr
+class e_seller_a2 attr
+class e_notification_a0 attr
+class e_notification_a1 attr
+class e_notification_a2 attr
+class e_notification_a3 attr
+class e_category_a0 attr
+class e_category_a1 attr
+class e_product_a0 attr
+class e_product_a1 attr
+class e_product_a2 attr
+class e_product_a3 attr
+class e_product_a4 attr
+class e_product_a5 attr
+class e_cart_a0 attr
+class e_cart_a1 attr
+class e_cartitem_a0 attr
+class e_cartitem_a1 attr
+class e_cartitem_a2 attr
+class e_cartitem_a3 attr
+class e_addr_a0 attr
+class e_addr_a1 attr
+class e_addr_a2 attr
+class e_order_a0 attr
+class e_order_a1 attr
+class e_order_a2 attr
+class e_order_a3 attr
+class e_orderitem_a0 attr
+class e_orderitem_a1 attr
+class e_orderitem_a2 attr
+class e_payment_a0 attr
+class e_payment_a1 attr
+class e_payment_a2 attr
+class e_payment_a3 attr
+class e_delivery_a0 attr
+class e_delivery_a1 attr
+class e_delivery_a2 attr
+class e_history_a0 attr
+class e_history_a1 attr
+class e_history_a2 attr
+class e_settlement_a0 attr
+class e_settlement_a1 attr
+class e_settlement_a2 attr
+class e_post_a0 attr
+class e_post_a1 attr
+class e_post_a2 attr
+class e_post_a3 attr
+class e_post_a4 attr
+class e_postimage_a0 attr
+class e_postimage_a1 attr
+class e_postimage_a2 attr
+class e_comment_a0 attr
+class e_comment_a1 attr
+class e_comment_a2 attr
+class e_comment_a3 attr
+class e_postlike_a0 attr
+class e_postlike_a1 attr
+class e_postlike_a2 attr
+class e_report_a0 attr
+class e_report_a1 attr
+class e_report_a2 attr
+class e_report_a3 attr
+class e_tag_a0 attr
+class e_tag_a1 attr
+class e_tag_a2 attr
+class r0 rel
+class r1 rel
+class r2 rel
+class r3 rel
+class r4 rel
+class r5 rel
+class r6 rel
+class r7 rel
+class r8 rel
+class r9 rel
+class r10 rel
+class r11 rel
+class r12 rel
+class r13 rel
+class r14 rel
+class r15 rel
+class r16 rel
+class r17 rel
+class r18 rel
+class r19 rel
+class r20 rel
+class r21 rel
+class r22 rel
+class r23 rel
+class r24 rel
+class rs0 rel
+class rs1 rel`;
+
+const { svg } = await mermaid.render('erd-svg', src);
+document.getElementById('erd').innerHTML = svg;
+
+const svgEl = document.querySelector('#erd svg');
+svgEl.removeAttribute('height');
+svgEl.style.width = '100%';
+svgEl.style.height = '100%';
+
+const panZoom = window.svgPanZoom(svgEl, {
+  zoomEnabled: true,
+  panEnabled: true,
+  controlIconsEnabled: false,
+  fit: true,
+  center: true,
+  minZoom: 0.2,
+  maxZoom: 10,
+  zoomScaleSensitivity: 0.35,
+});
+
+document.getElementById('zoomIn').addEventListener('click', () => panZoom.zoomIn());
+document.getElementById('zoomOut').addEventListener('click', () => panZoom.zoomOut());
+document.getElementById('zoomReset').addEventListener('click', () => { panZoom.resetZoom(); panZoom.fit(); panZoom.center(); });
+
+window.addEventListener('resize', () => { panZoom.resize(); panZoom.fit(); panZoom.center(); });
+</script>
+</body>
+</html>

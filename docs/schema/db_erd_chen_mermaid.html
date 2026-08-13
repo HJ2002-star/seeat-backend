@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>수산물 거래 플랫폼 - 통합 ERD (Peter Chen 표기법)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #ffffff;
+    font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  }
+  h1 { font-size: 20px; color: #2C2C2A; margin: 0 0 4px 0; }
+  p.sub { font-size: 13px; color: #5F5E5A; margin: 0 0 8px 0; }
+  .legend { font-size: 12px; color: #5F5E5A; margin-bottom: 16px; }
+  .legend span { display: inline-block; margin-right: 16px; }
+  .swatch { display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:4px; vertical-align:middle; }
+  #erd { overflow-x: auto; }
+</style>
+</head>
+<body>
+<h1>수산물 거래 플랫폼 — 통합 ERD (Peter Chen 표기법)</h1>
+<p class="sub">디자인 초기안 v1.0 반영 · 20개 테이블(사각형) · 기본키 속성(타원) · 관계(마름모) · 27개 관계</p>
+<div class="legend">
+  <span><i class="swatch" style="background:#E6F1FB;border:1px solid #185FA5"></i>회원 도메인</span>
+  <span><i class="swatch" style="background:#EAF3DE;border:1px solid #3B6D11"></i>상품 도메인</span>
+  <span><i class="swatch" style="background:#FAEEDA;border:1px solid #854F0B"></i>주문/결제/배송 도메인</span>
+  <span><i class="swatch" style="background:#FBEAF0;border:1px solid #993556"></i>커뮤니티 도메인</span>
+  <span><i class="swatch" style="background:#FDF3D9;border:1px solid #854F0B"></i>관계(마름모)</span>
+  <span><i class="swatch" style="background:#F8F7F3;border:1px solid #A5A399"></i>기본키 속성(타원)</span>
+</div>
+<div id="erd"></div>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Noto Sans KR", sans-serif',
+  themeVariables: {
+    fontSize: '13px',
+    fontFamily: '"Noto Sans KR", sans-serif',
+    lineColor: '#9C9A92',
+    textColor: '#3d3d3a',
+  },
+});
+
+const src = `flowchart TB
+classDef entMember fill:#E6F1FB,stroke:#185FA5,color:#0C447C;
+classDef entProduct fill:#EAF3DE,stroke:#3B6D11,color:#27500A;
+classDef entOrder fill:#FAEEDA,stroke:#854F0B,color:#633806;
+classDef entCommunity fill:#FBEAF0,stroke:#993556,color:#72243E;
+classDef rel fill:#FDF3D9,stroke:#854F0B,color:#633806;
+classDef attr fill:#F8F7F3,stroke:#A5A399,color:#444441;
+
+e_member["회원<br/>(member)"]
+e_member_pk(["user_id"])
+e_member_pk --- e_member
+e_seller["판매자사업자정보<br/>(seller_business_info)"]
+e_seller_pk(["user_id"])
+e_seller_pk --- e_seller
+e_notification["알림<br/>(notification)"]
+e_notification_pk(["notification_id"])
+e_notification_pk --- e_notification
+e_category["카테고리<br/>(category)"]
+e_category_pk(["category_id"])
+e_category_pk --- e_category
+e_product["상품<br/>(product)"]
+e_product_pk(["product_id"])
+e_product_pk --- e_product
+e_cart["장바구니<br/>(cart)"]
+e_cart_pk(["cart_id"])
+e_cart_pk --- e_cart
+e_cartitem["장바구니상품<br/>(cart_item)"]
+e_cartitem_pk(["cart_product_id"])
+e_cartitem_pk --- e_cartitem
+e_addr["배송지<br/>(delivery_address)"]
+e_addr_pk(["address_id"])
+e_addr_pk --- e_addr
+e_order["주문<br/>(order)"]
+e_order_pk(["order_id"])
+e_order_pk --- e_order
+e_orderitem["주문상품<br/>(order_item)"]
+e_orderitem_pk(["order_product_id"])
+e_orderitem_pk --- e_orderitem
+e_payment["결제<br/>(payment)"]
+e_payment_pk(["payment_id"])
+e_payment_pk --- e_payment
+e_delivery["배송<br/>(delivery)"]
+e_delivery_pk(["delivery_id"])
+e_delivery_pk --- e_delivery
+e_history["주문상태이력<br/>(order_status_history)"]
+e_history_pk(["history_id"])
+e_history_pk --- e_history
+e_settlement["정산<br/>(settlement)"]
+e_settlement_pk(["settlement_id"])
+e_settlement_pk --- e_settlement
+e_post["게시글<br/>(post)"]
+e_post_pk(["post_id"])
+e_post_pk --- e_post
+e_postimage["게시글이미지<br/>(post_image)"]
+e_postimage_pk(["image_id"])
+e_postimage_pk --- e_postimage
+e_comment["댓글<br/>(comment)"]
+e_comment_pk(["comment_id"])
+e_comment_pk --- e_comment
+e_postlike["게시글좋아요<br/>(post_like)"]
+e_postlike_pk(["like_id"])
+e_postlike_pk --- e_postlike
+e_report["신고<br/>(report)"]
+e_report_pk(["report_id"])
+e_report_pk --- e_report
+e_tag["상품태그<br/>(product_tag)"]
+e_tag_pk(["tag_id"])
+e_tag_pk --- e_tag
+
+r0{"인증"}
+e_member ---|"1"| r0
+r0 ---|"1"| e_seller
+r1{"판매"}
+e_member ---|"1"| r1
+r1 ---|"N"| e_product
+r2{"소유"}
+e_member ---|"1"| r2
+r2 ---|"1"| e_cart
+r3{"등록"}
+e_member ---|"1"| r3
+r3 ---|"N"| e_addr
+r4{"주문"}
+e_member ---|"1"| r4
+r4 ---|"N"| e_order
+r5{"정산"}
+e_member ---|"1"| r5
+r5 ---|"N"| e_settlement
+r6{"수신"}
+e_member ---|"1"| r6
+r6 ---|"N"| e_notification
+r7{"작성"}
+e_member ---|"1"| r7
+r7 ---|"N"| e_post
+r8{"작성"}
+e_member ---|"1"| r8
+r8 ---|"N"| e_comment
+r9{"추천"}
+e_member ---|"1"| r9
+r9 ---|"N"| e_postlike
+r10{"신고"}
+e_member ---|"1"| r10
+r10 ---|"N"| e_report
+r11{"분류"}
+e_category ---|"1"| r11
+r11 ---|"N"| e_product
+r12{"포함"}
+e_cart ---|"1"| r12
+r12 ---|"N"| e_cartitem
+r13{"담기"}
+e_product ---|"1"| r13
+r13 ---|"N"| e_cartitem
+r14{"배송지"}
+e_addr ---|"1"| r14
+r14 ---|"N"| e_order
+r15{"포함"}
+e_order ---|"1"| r15
+r15 ---|"N"| e_orderitem
+r16{"담기"}
+e_product ---|"1"| r16
+r16 ---|"N"| e_orderitem
+r17{"결제"}
+e_order ---|"1"| r17
+r17 ---|"1"| e_payment
+r18{"배송"}
+e_order ---|"1"| r18
+r18 ---|"1"| e_delivery
+r19{"이력기록"}
+e_order ---|"1"| r19
+r19 ---|"N"| e_history
+r20{"연동"}
+e_product ---|"1"| r20
+r20 ---|"N"| e_tag
+r21{"첨부"}
+e_post ---|"1"| r21
+r21 ---|"N"| e_postimage
+r22{"포함"}
+e_post ---|"1"| r22
+r22 ---|"N"| e_comment
+r23{"받음"}
+e_post ---|"1"| r23
+r23 ---|"N"| e_postlike
+r24{"태그"}
+e_post ---|"1"| r24
+r24 ---|"N"| e_tag
+
+rs0{"상하위"}
+e_category ---|"1"| rs0
+rs0 ---|"N"| e_category
+rs1{"대댓글"}
+e_comment ---|"1"| rs1
+rs1 ---|"N"| e_comment
+
+class e_member entMember
+class e_member_pk attr
+class e_seller entMember
+class e_seller_pk attr
+class e_notification entMember
+class e_notification_pk attr
+class e_category entProduct
+class e_category_pk attr
+class e_product entProduct
+class e_product_pk attr
+class e_cart entProduct
+class e_cart_pk attr
+class e_cartitem entProduct
+class e_cartitem_pk attr
+class e_addr entProduct
+class e_addr_pk attr
+class e_order entOrder
+class e_order_pk attr
+class e_orderitem entOrder
+class e_orderitem_pk attr
+class e_payment entOrder
+class e_payment_pk attr
+class e_delivery entOrder
+class e_delivery_pk attr
+class e_history entOrder
+class e_history_pk attr
+class e_settlement entOrder
+class e_settlement_pk attr
+class e_post entCommunity
+class e_post_pk attr
+class e_postimage entCommunity
+class e_postimage_pk attr
+class e_comment entCommunity
+class e_comment_pk attr
+class e_postlike entCommunity
+class e_postlike_pk attr
+class e_report entCommunity
+class e_report_pk attr
+class e_tag entCommunity
+class e_tag_pk attr
+class r0 rel
+class r1 rel
+class r2 rel
+class r3 rel
+class r4 rel
+class r5 rel
+class r6 rel
+class r7 rel
+class r8 rel
+class r9 rel
+class r10 rel
+class r11 rel
+class r12 rel
+class r13 rel
+class r14 rel
+class r15 rel
+class r16 rel
+class r17 rel
+class r18 rel
+class r19 rel
+class r20 rel
+class r21 rel
+class r22 rel
+class r23 rel
+class r24 rel
+class rs0 rel
+class rs1 rel`;
+
+const { svg } = await mermaid.render('erd-svg', src);
+document.getElementById('erd').innerHTML = svg;
+</script>
+</body>
+</html>
