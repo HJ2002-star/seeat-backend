@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>수산물 거래 플랫폼 - 통합 ERD (IE 표기법)</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #ffffff;
+    font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  }
+  h1 {
+    font-size: 20px;
+    color: #2C2C2A;
+    margin: 0 0 4px 0;
+  }
+  p.sub {
+    font-size: 13px;
+    color: #5F5E5A;
+    margin: 0 0 24px 0;
+  }
+  #erd {
+    overflow-x: auto;
+  }
+  #erd svg.erDiagram .divider path { stroke-opacity: 0.5; }
+  #erd svg.erDiagram .row-rect-odd path,
+  #erd svg.erDiagram .row-rect-odd rect,
+  #erd svg.erDiagram .row-rect-even path,
+  #erd svg.erDiagram .row-rect-even rect { stroke: none !important; }
+</style>
+</head>
+<body>
+<h1>수산물 거래 플랫폼 — 통합 ERD (IE / 크로우풋 표기법)</h1>
+<p class="sub">디자인 초기안 v1.0 반영 · 20개 테이블, 27개 관계</p>
+<div id="erd"></div>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Noto Sans KR", sans-serif',
+  themeVariables: {
+    fontSize: '13px',
+    fontFamily: '"Noto Sans KR", sans-serif',
+    lineColor: '#73726c',
+    textColor: '#3d3d3a',
+    primaryColor: '#E6F1FB',
+    primaryBorderColor: '#185FA5',
+    primaryTextColor: '#0C447C',
+  },
+});
+
+const src = `erDiagram
+  MEMBER ||--o| SELLER_BUSINESS_INFO : "인증"
+  MEMBER ||--o{ PRODUCT : "판매"
+  MEMBER ||--o| CART : "소유"
+  MEMBER ||--o{ DELIVERY_ADDRESS : "등록"
+  MEMBER ||--o{ ORDER : "주문"
+  MEMBER ||--o{ SETTLEMENT : "정산"
+  MEMBER ||--o{ NOTIFICATION : "수신"
+  MEMBER ||--o{ POST : "작성"
+  MEMBER ||--o{ COMMENT : "작성"
+  MEMBER ||--o{ POST_LIKE : "추천"
+  MEMBER ||--o{ REPORT : "신고"
+  CATEGORY ||--o{ PRODUCT : "분류"
+  CATEGORY ||--o{ CATEGORY : "상하위"
+  CART ||--o{ CART_ITEM : "포함"
+  PRODUCT ||--o{ CART_ITEM : "담기"
+  DELIVERY_ADDRESS ||--o{ ORDER : "배송지"
+  ORDER ||--o{ ORDER_ITEM : "포함"
+  PRODUCT ||--o{ ORDER_ITEM : "담기"
+  ORDER ||--|| PAYMENT : "결제"
+  ORDER ||--|| DELIVERY : "배송"
+  ORDER ||--o{ ORDER_STATUS_HISTORY : "이력기록"
+  PRODUCT ||--o{ PRODUCT_TAG : "연동"
+  POST ||--o{ POST_IMAGE : "첨부"
+  POST ||--o{ COMMENT : "포함"
+  POST ||--o{ POST_LIKE : "받음"
+  POST ||--o{ PRODUCT_TAG : "태그"
+  COMMENT ||--o{ COMMENT : "대댓글"
+
+  MEMBER {
+    bigint user_id PK
+    string email
+    string role
+    string password_hash
+    string nickname
+  }
+  SELLER_BUSINESS_INFO {
+    bigint user_id PK
+    string business_no
+    string auth_status
+  }
+  NOTIFICATION {
+    bigint notification_id PK
+    bigint user_id FK
+    string type
+    boolean is_read
+  }
+  CATEGORY {
+    bigint category_id PK
+    string category_name
+    bigint parent_category_id FK
+  }
+  PRODUCT {
+    bigint product_id PK
+    bigint seller_id FK
+    bigint category_id FK
+    string storage_type
+    int stock_qty
+    decimal price
+  }
+  CART {
+    bigint cart_id PK
+    bigint user_id FK
+  }
+  CART_ITEM {
+    bigint cart_product_id PK
+    bigint cart_id FK
+    bigint product_id FK
+    int quantity
+  }
+  DELIVERY_ADDRESS {
+    bigint address_id PK
+    bigint user_id FK
+    boolean is_default
+  }
+  ORDER {
+    bigint order_id PK
+    bigint buyer_id FK
+    bigint address_id FK
+    string order_status
+  }
+  ORDER_ITEM {
+    bigint order_product_id PK
+    bigint order_id FK
+    bigint product_id FK
+  }
+  PAYMENT {
+    bigint payment_id PK
+    bigint order_id FK
+    string payment_method
+    string pg_tx_id
+  }
+  DELIVERY {
+    bigint delivery_id PK
+    bigint order_id FK
+    string tracking_no
+  }
+  ORDER_STATUS_HISTORY {
+    bigint history_id PK
+    bigint order_id FK
+    string status_value
+  }
+  SETTLEMENT {
+    bigint settlement_id PK
+    bigint seller_id FK
+    decimal amount
+  }
+  POST {
+    bigint post_id PK
+    bigint user_id FK
+    string category
+    string title
+    boolean is_blinded
+  }
+  POST_IMAGE {
+    bigint image_id PK
+    bigint post_id FK
+    string image_url
+  }
+  COMMENT {
+    bigint comment_id PK
+    bigint post_id FK
+    bigint user_id FK
+    bigint parent_id FK
+  }
+  POST_LIKE {
+    bigint like_id PK
+    bigint post_id FK
+    bigint user_id FK
+  }
+  PRODUCT_TAG {
+    bigint tag_id PK
+    bigint post_id FK
+    bigint product_id FK
+  }
+  REPORT {
+    bigint report_id PK
+    string target_type
+    bigint target_id
+    bigint reporter_id FK
+  }
+`;
+
+const { svg } = await mermaid.render('erd-svg', src);
+document.getElementById('erd').innerHTML = svg;
+</script>
+</body>
+</html>
